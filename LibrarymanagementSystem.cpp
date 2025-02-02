@@ -28,6 +28,83 @@ public://access specifier, polymorphism concept
         cout << "Name: " << name << ", ID: " << id << ", Contact: " << contact << ", Role: " << role << endl;
     }
 };
+class Member : public Person, public LibraryEntity {
+    private:
+        vector<string> borrowedBooks;
+    public:
+        Member(string n, int i, string c) : Person(n, i, c, "Member") {}
+    
+        void borrowBook(const string& title) {
+            borrowedBooks.push_back(title);
+            cout << "Book borrowed successfully!\n";
+        }
+    
+        void returnBook(const string& title) {
+            auto it = find(borrowedBooks.begin(), borrowedBooks.end(), title);
+            if (it != borrowedBooks.end()) {
+                borrowedBooks.erase(it);
+                cout << "Book returned successfully!\n";
+            } else {
+                cout << "Error: You haven't borrowed this book!\n";
+            }
+        }
+    
+        void displayDetails() const override {
+            Person::displayDetails();
+            cout << "Borrowed Books: ";
+            if (borrowedBooks.empty()) {
+                cout << "None";
+            } else {
+                for (const auto& book : borrowedBooks) {
+                    cout << book << ", ";
+                }
+            }
+            cout << endl;
+        }
+        void saveToFile(ofstream &outFile) const override {
+            outFile << "2," << name << "," << id << "," << contact << ",";
+            for (const auto& book : borrowedBooks) {
+                outFile << book << "|";
+            }
+            outFile << endl;
+        }
+    
+        void loadFromFile(ifstream &inFile) override {
+            string bookList;
+            getline(inFile, name, ',');
+            inFile >> id;
+            inFile.ignore();
+            getline(inFile, contact, ',');
+            getline(inFile, bookList);
+            size_t pos = 0;
+            while ((pos = bookList.find('|')) != string::npos) {
+                borrowedBooks.push_back(bookList.substr(0, pos));
+                bookList.erase(0, pos + 1);
+            }
+        }
+    };
+    
+    class Librarian : public Person, public LibraryEntity {
+    public:
+        Librarian(string n, int i, string c) : Person(n, i, c, "Librarian") {}
+    
+        void displayDetails() const override {
+            cout << "Librarian: ";
+            Person::displayDetails();
+        }
+    
+        void saveToFile(ofstream &outFile) const override {
+            outFile << "1," << name << "," << id << "," << contact << endl;
+        }
+    
+        void loadFromFile(ifstream &inFile) override {
+            getline(inFile, name, ',');
+            inFile >> id;
+            inFile.ignore();
+            getline(inFile, contact);
+        }
+    };
+    
 
 class Book : public LibraryEntity {
     private:
@@ -59,7 +136,7 @@ class Book : public LibraryEntity {
         void saveToFile(ofstream &outFile) const override {
             outFile << "0," << ISBN << "," << title << "," << author << "," << year << "," << isAvailable << endl;
         }
-    
+    //load from a file
         void loadFromFile(ifstream &inFile) override {
             inFile >> ISBN;
             inFile.ignore();
