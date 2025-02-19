@@ -28,3 +28,51 @@ public://access specifier, polymorphism concept
         cout << "Name: " << name << ", ID: " << id << ", Contact: " << contact << ", Role: " << role << endl;
     }
 };
+
+class Book : public LibraryEntity {
+    private:
+        int ISBN;
+        string title;
+        string author;
+        int year;
+        bool isAvailable;
+    public:
+        Book(int isbn, string t, string a, int y, bool avail = true)
+            : ISBN(isbn), title(t), author(a), year(y), isAvailable(avail) {}
+    
+        void borrowBook() {
+            if (!isAvailable) {
+                throw runtime_error("Error: Book is already borrowed.");
+            }
+            isAvailable = false;
+        }
+    
+        void returnBook() {
+            isAvailable = true;
+        }
+    
+        void displayDetails() const override {
+            cout << "ISBN: " << ISBN << " | Title: " << title << " | Author: " << author
+                 << " | Year: " << year << " | Status: " << (isAvailable ? "Available" : "Borrowed") << endl;
+        }
+    
+        void saveToFile(ofstream &outFile) const override {
+            outFile << "0," << ISBN << "," << title << "," << author << "," << year << "," << isAvailable << endl;
+        }
+    
+        void loadFromFile(ifstream &inFile) override {
+            inFile >> ISBN;
+            inFile.ignore();
+            getline(inFile, title, ',');
+            getline(inFile, author, ',');
+            inFile >> year;
+            inFile.ignore();
+            inFile >> isAvailable;
+            inFile.ignore();
+        }
+    
+        int getISBN() const { return ISBN; }
+        string getTitle() const { return title; }
+        bool getStatus() const { return isAvailable; }
+    };
+    
